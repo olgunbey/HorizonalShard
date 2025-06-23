@@ -6,23 +6,11 @@ using Shard.Entities;
 
 static async Task AddUserToShardAsync(User user)
 {
-    Dictionary<int, DbContext> dbContexts = new Dictionary<int, DbContext>()
-    {
-        {0,new UserDbContext() },
-        {1,new UserShard1DbContext() }
-    };
+    ShardService shardService = new ShardService();
+    int resultId = shardService.IdConverter(user.Id);
 
-    char firstChar = user.Id.ToString()[0];
-
-    int result = 0;
-
-    if (!int.TryParse(firstChar.ToString(), out result))
-    {
-        result = (int)firstChar;
-    }
-
-    dbContexts.TryGetValue(result % dbContexts.Count, out DbContext dbContext);
-    dbContext.Add(user);
+    DbContext? dbContext = shardService.ShardSelection(resultId);
+    dbContext?.Add(user);
 
     await dbContext.SaveChangesAsync();
 
@@ -31,13 +19,18 @@ static async Task AddUserToShardAsync(User user)
 
 
 
-User user = new User()
-{
-    Id = Guid.NewGuid(),
-    FirstName = "ercan",
-    LastName = "arda"
-};
-await AddUserToShardAsync(user);
+//User user = new User()
+//{
+//    Id = Guid.NewGuid(),
+//    FirstName = "ercan",
+//    LastName = "arda"
+//};
+//await AddUserToShardAsync(user);
 
+UserService userService = new UserService();
+var user = await userService.GetUserByIdAsync(Guid.Parse("cd5dc759-966d-417e-9fe3-e53e74720264"));
+
+
+Console.WriteLine(user!.FirstName);
 
 
