@@ -17,5 +17,13 @@ namespace Shard
             }
             return hasUser;
         }
+        public async Task AddUser(User user)
+        {
+            ShardService shardService = new ShardService();
+            int resultId = shardService.IdConverter(user.Id);
+            DbContext? dbContext = shardService.ShardSelection(resultId);
+            dbContext!.Add(user);
+            await dbContext!.SaveChangesAsync();
+        }
     }
 }
